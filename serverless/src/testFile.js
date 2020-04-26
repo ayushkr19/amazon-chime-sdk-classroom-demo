@@ -9,7 +9,6 @@ chime.endpoint = new AWS.Endpoint(
   'https://service.chime.aws.amazon.com/console'
 );
 const { CONNECTIONS_TABLE_NAME } = process.env;
-const { GAME_TABLE_NAME } = process.env;
 const strictVerify = true;
 
 exports.authorize = async (event, context, callback) => {
@@ -163,7 +162,7 @@ exports.sendmessage = async event => {
        try {
           await ddb
             .putItem({
-              TableName: GAME_TABLE_NAME,
+              TableName: "GameTable",
               Item: {
                 GameId: { S: gameUid },
                 AttendeeId: { S: "id" },
@@ -185,7 +184,10 @@ exports.sendmessage = async event => {
 
 
 
-    console.log("Data: ", JSON.stringify(data));
+
+
+    postData = data;
+    console.log("postData: ", JSON.stringify(postData));
   }
   
   

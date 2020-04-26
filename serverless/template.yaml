@@ -20,6 +20,7 @@ Globals:
         ATTENDEES_TABLE_NAME: !Ref Attendees
         SQS_QUEUE_ARN: !GetAtt MeetingNotificationsQueue.Arn
         CONNECTIONS_TABLE_NAME: !Ref ConnectionsTable
+        GAME_TABLE_NAME: !Ref GameTable
         MESSAGING_WSS_URL: !Join ['', ['wss://', !Ref WebSocketMessagingApi, '.execute-api.', !Ref 'AWS::Region','.amazonaws.com/Prod']]
 Resources:
   ChimeMeetingsAccessPolicy:
@@ -58,9 +59,7 @@ Resources:
       KeySchema:
         - AttributeName: "Title"
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+      BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
         - IndexName: "Passcode"
           KeySchema:
@@ -68,9 +67,7 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: "5"
-            WriteCapacityUnits: "5"
+      BillingMode: PAY_PER_REQUEST
       TimeToLiveSpecification:
         AttributeName: "TTL"
         Enabled: true
@@ -83,9 +80,26 @@ Resources:
       KeySchema:
         - AttributeName: "AttendeeId"
           KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: "5"
-        WriteCapacityUnits: "5"
+      BillingMode: PAY_PER_REQUEST
+  GameTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: GameId
+        AttributeType: S
+      - AttributeName: AttendeeId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: GameId
+        KeyType: HASH
+      - AttributeName: AttendeeId
+        KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: TTL
+        Enabled: true
   MeetingNotificationsQueue:
     Type: AWS::SQS::Queue
   ChimeSdkIndexLambda:
@@ -384,6 +398,8 @@ Resources:
       Policies:
       - DynamoDBCrudPolicy:
           TableName: !Ref ConnectionsTable
+      - DynamoDBCrudPolicy:
+          TableName: !Ref GameTable      
       - Statement:
         - Effect: Allow
           Action:

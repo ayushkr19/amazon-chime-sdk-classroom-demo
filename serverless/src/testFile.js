@@ -9,6 +9,7 @@ chime.endpoint = new AWS.Endpoint(
   'https://service.chime.aws.amazon.com/console'
 );
 const { CONNECTIONS_TABLE_NAME } = process.env;
+const { GAME_TABLE_NAME } = process.env;
 const strictVerify = true;
 
 exports.authorize = async (event, context, callback) => {
@@ -137,7 +138,6 @@ exports.sendmessage = async event => {
           ':meetingId': { S: event.requestContext.authorizer.MeetingId }
         },
         KeyConditionExpression: 'MeetingId = :meetingId',
-        ProjectionExpression: 'ConnectionId',
         TableName: CONNECTIONS_TABLE_NAME
       })
       .promise();
@@ -152,42 +152,76 @@ exports.sendmessage = async event => {
   var postData = JSON.parse(event.body).data;
   
   var data = JSON.parse(JSON.parse(event.body).data);
+  
+  console.log(attendees.Items.length);
+  console.log(attendees);
+  for (var i = 0; i < attendees.Items.length; i++) {
+    console.log(attendees.Items[i].AttendeeId);
+  }
 
+  var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo", 
+  "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube", 
+  "Suspicion"];
+  
   if(data.type === "game_message") {
     console.log("game_message");
 
+
+    //Start Game
     if(data.payload.eventType === "start_game") {
+      
       var gameUid = data.payload.gameUid;
-      data.payload.message="Lets Begin The game";
-       try {
-          await ddb
-            .putItem({
-              TableName: "GameTable",
-              Item: {
-                GameId: { S: gameUid },
-                AttendeeId: { S: "id" },
-                Movie: { S: "Avengers" },
-                Points: { N: "10"},
-                TTL: { N: `${oneDayFromNow}` }
-              }
-            })
-            .promise();
-        } catch (e) {
-          console.error(`error connecting: ${e.message}`);
-          return {
-            statusCode: 500,
-            body: `Failed to connect: ${JSON.stringify(err)}`
-          };
-      }
+      
+      //Shuffle Movies Array
+      var currentIndex = movies.length, temporaryValue, randomIndex;
+      while (0 !== currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = movies[currentIndex];
+        movies[currentIndex] = movies[randomIndex];
+        movies[randomIndex] = temporaryValue;
+      }        
+      
+      //Initialize the db with the game details
+      const dbCalls = attendees.Items.map(async record => {
+        const attendee = record.AttendeeId.S;
+         try {
+            await ddb
+              .putItem({
+                TableName: GAME_TABLE_NAME,
+                Item: {
+                  GameId: { S: gameUid },
+                  AttendeeId: { S: attendee },
+                  Movie: { S: movies[i]},
+                  Points: { N: "0"},
+                  TTL: { N: `${oneDayFromNow}` }
+                }
+              })
+              .promise();
+          } catch (e) {
+            console.error(`error connecting: ${e.message}`);
+            return {
+              statusCode: 500,
+              body: `Failed to connect: ${JSON.stringify(err)}`
+            };
+        }
+      });
+      try {
+        await Promise.all(dbCalls);
+      } catch (e) {
+        console.error(`failed to post: ${e.message}`);
+        return { statusCode: 500, body: e.stack };
+     }
+     data.payload.message="Let the game begin";
+     data.payload.eventType="start_round";
+     data.payload.roundNumber = 1;
+     postData = data;
     }
+    //End of Start Game
 
 
 
-
-
-
-    postData = data;
-    console.log("postData: ", JSON.stringify(postData));
+    console.log("EndData : ", JSON.stringify(postData));
   }
   
   

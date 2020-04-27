@@ -128,6 +128,7 @@ exports.ondisconnect = async event => {
 };
 
 exports.sendmessage = async event => {
+  var docClient = new AWS.DynamoDB.DocumentClient();
   const oneDayFromNow = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
   console.log('sendmessage event:', JSON.stringify(event, null, 2));
   let attendees = {};
@@ -150,22 +151,45 @@ exports.sendmessage = async event => {
   });
   
   var postData = JSON.parse(event.body).data;
-  
+
   var data = JSON.parse(JSON.parse(event.body).data);
-  
-  console.log(attendees.Items.length);
-  console.log(attendees);
-  for (var i = 0; i < attendees.Items.length; i++) {
-    console.log(attendees.Items[i].AttendeeId);
-  }
 
   var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo", 
   "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube", 
   "Suspicion"];
   
-  if(data.type === "game_message") {
-    console.log("game_message");
+  //Start of Successful guess code
+  if(data.type === "chat-message"){
+    var gameUid = data.payload.gameUid;
+    var movie = data.payload.movie;
+    var guess = data.payload.message;
+    var attendeeId = data.payload.attendeeId;
 
+    if(guess.toUpperCase() === movie.toUpperCase()){
+      try {
+        var score = await docClient
+          .update({
+             Key: {
+              'GameId': gameUid,
+              'AttendeeId': attendeeId,
+            },
+           UpdateExpression: "set Points = Points + :val",
+           ExpressionAttributeValues:{
+             ":val": 10
+            },
+           TableName: GAME_TABLE_NAME,
+           ReturnValues:"UPDATED_NEW"
+        })
+          .promise();
+        } catch (e) {
+           return { statusCode: 500, body: e.stack };
+       }
+       data.type = "game_message";
+       data.payload.message="Successful Guess";
+       data.payload.eventType="successful_guess";
+       postData = JSON.stringify(data);
+    }
+  } else if(data.type === "game_message") {
 
     //Start Game
     if(data.payload.eventType === "start_game") {
@@ -185,7 +209,9 @@ exports.sendmessage = async event => {
       //Initialize the db with the game details
       var flag=0;
       var actor="";
+      var count = -1;
       const dbCalls = attendees.Items.map(async record => {
+        count++;
         const attendee = record.AttendeeId.S;
         if(flag===0){
           actor = attendee;
@@ -198,14 +224,14 @@ exports.sendmessage = async event => {
                 Item: {
                   GameId: { S: gameUid },
                   AttendeeId: { S: attendee },
-                  Movie: { S: movies[i]},
+                  Movie: { S: movies[count]},
                   Points: { N: "0"},
                   TTL: { N: `${oneDayFromNow}` }
                 }
               })
               .promise();
-          } catch (e) {
-            console.error(`error connecting: ${e.message}`);
+          } catch (err) {
+            console.error(`error connecting: ${err.message}`);
             return {
               statusCode: 500,
               body: `Failed to connect: ${JSON.stringify(err)}`
@@ -222,7 +248,7 @@ exports.sendmessage = async event => {
      data.payload.eventType="start_round";
      data.payload.roundNumber = 1;
      data.payload.actor=actor;
-     postData = data;
+     postData = JSON.stringify(data);
     }
     //End of Start Game
 

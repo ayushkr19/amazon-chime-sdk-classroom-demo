@@ -10,9 +10,9 @@ type Props = {
 
 export default function Timer(props: Props) {
     const { adminId } = props;
-
     const [time, setTime] = useState(20);
     const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
+    const [showTimer, setShowTimer] = useState(false);
 
     const calculateTimeLeft = () => {
         if (time > 0) {
@@ -49,6 +49,7 @@ export default function Timer(props: Props) {
         const callback = (message: MessageType) => {
             const { type, payload } = message;
             if (type === 'game_message' && payload.eventType === 'start_round') {
+                setShowTimer(true);
                 resetTime();
             }
         };
@@ -58,9 +59,19 @@ export default function Timer(props: Props) {
         };
     }, []);
 
-    return (
-        <div>
-            {time} seconds left
-        </div>
-    );
+    if (showTimer) {
+        return (
+            <div>
+                {time} seconds left
+            </div>
+        );
+    }
+    else {
+        return (
+            <div>
+                {/* Any String can be added here */}
+                WoooHoo !! Let's start a new journey.
+            </div>
+        );
+    }
 }

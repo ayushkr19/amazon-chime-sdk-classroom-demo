@@ -45,30 +45,33 @@ export default function Classroom() {
   const [gameUid, setGameUid] = useState("");
   const [roundNumber, setRoundNumber] = useState(0);
   const [adminId, setAdminId] = useState("");
+  const [currentMovieName, setCurrentMovieName] = useState("");
 
   const onClickGameModeButton = () => {
     console.log("On click game mode");
     const attendeeId = chime?.configuration?.credentials?.attendeeId;
     if (attendeeId) {
+      var newGameId = uuid();
+      if (gameUid.length === 0) {
+        // Start game only if a game Id already doesn't exist.
+        chime?.sendMessage('game_message', {
+          attendeeId,
+          message: "Start game bro.",
+          eventType: "start_game",
+          gameUid: newGameId,
+          adminId: attendeeId
+        });
+        setGameUid(newGameId);
+      }
 
-      // Start game
-      chime?.sendMessage('game_message', {
-        attendeeId,
-        message: "Start game bro.",
-        eventType: "start_game",
-        gameUid: uuid(),
-        adminId: attendeeId
-      });
-
-
-      // Start round
-      chime?.sendMessage('game_message', {
-        attendeeId,
-        message: "Start round bro.",
-        eventType: "start_round",
-        actorId: attendeeId,
-        roundNumber: 1
-      });
+      // Start round TODO: This is only for testing right now.
+      // chime?.sendMessage('game_message', {
+      //   attendeeId,
+      //   message: "Start round bro.",
+      //   eventType: "start_round",
+      //   actorId: attendeeId,
+      //   roundNumber: 1
+      // });
     }
   }
 
@@ -76,22 +79,36 @@ export default function Classroom() {
     console.log("On game message received: ", message);
 
     if (message.payload.eventType === 'start_game') {
+      // TODO: We will not get this message anytime. So remove all logic from here.
       // Set game uid
-      let newGameUid = message.payload.gameUid;
-      setGameUid(newGameUid);
+      // let newGameUid = message.payload.gameUid;
+      // setGameUid(newGameUid);
 
       // Need to set adminId here as well, so that cna trigger round end through admin's timer expiry.
-      setAdminId(message.payload.adminId);
+      // setAdminId(message.payload.adminId);
       
       // Change backgrounds, or any UI changes can be implemented here.
     } else if (message.payload.eventType === 'start_round') {
       // Set the round number in the state.
       setRoundNumber(message.payload.roundNumber);
 
+      if (adminId.length === 0) {
+        setAdminId(message.payload.adminId);
+      }
+
+      // If gameUid is not already set, then set the GameUid.
+      if (gameUid.length === 0) {
+        setGameUid(message.payload.gameUid);
+      }
+
       // Highlight actor in Roster.
       // This is being done in useActiveActor.tsx hook now.
 
       // Reset timer and start counting down.
+      // This is already implemented in Timer.tsx.
+
+      // TODO: Show movie name only to the actor.
+      setCurrentMovieName(message.payload.movie);
 
     } else if (message.payload.eventType === 'end_round') {
       // Show people who guessed correctly.
@@ -208,7 +225,7 @@ export default function Classroom() {
                   <FormattedMessage id="Classroom.classroom" />
                 </div> */}
                 <div className={cx('label')}>
-                  <GameInfo gameUid={gameUid} roundNumber={roundNumber} adminId={adminId} />
+                  <GameInfo gameUid={gameUid} roundNumber={roundNumber} adminId={adminId} currentMovieName={currentMovieName} />
                 </div>
 
                 <div className={cx('label')}>
@@ -222,7 +239,7 @@ export default function Classroom() {
                 <Roster />
               </div>
               <div className={cx('chat')}>
-                <Chat onGameMessageReceived={onGameMessageReceived}/>
+                <Chat onGameMessageReceived={onGameMessageReceived} gameUid={gameUid} currentMovieName={currentMovieName} roundNumber={roundNumber} />
               </div>
             </div>
           </>

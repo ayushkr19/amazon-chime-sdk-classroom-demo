@@ -15,10 +15,13 @@ const cx = classNames.bind(styles);
 
 type Props = {
   onGameMessageReceived: (message: MessageType) => void;
+  gameUid: string;
+  currentMovieName: string;
+  roundNumber: number;
 };
 
 export default function Chat(props: Props) {
-  const {onGameMessageReceived } = props;
+  const { onGameMessageReceived, gameUid, currentMovieName, roundNumber } = props;
   const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
   const [messages, setMessages] = useState<MessageType[]>([]);
   const bottomElement = useRef(null);
@@ -93,7 +96,7 @@ export default function Chat(props: Props) {
         <div className="bottom" ref={bottomElement} />
       </div>
       <div className={cx('chatInput')}>
-        <ChatInput />
+        <ChatInput gameUid={gameUid} currentMovieName={currentMovieName} roundNumber={roundNumber} />
       </div>
     </div>
   );

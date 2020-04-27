@@ -7,15 +7,17 @@ const cx = classNames.bind(styles);
 type Props = {
     gameUid: string;
     roundNumber: number;
-    adminId: string
+    adminId: string;
+    currentMovieName: string;
 }
 
 export default function GameInfo(props: Props) {
-    const {gameUid, roundNumber, adminId} = props;
+    const { gameUid, roundNumber, adminId, currentMovieName} = props;
 
+    // TOOD: Current movie name to be displayed only to the actor.
     return (
         <div>
-            {gameUid.length > 0 &&
+            {gameUid != undefined && gameUid.length > 0 &&
                 <div className={cx('label')}>
                     <b>Game ID: </b> {gameUid}
                 </div>
@@ -25,7 +27,7 @@ export default function GameInfo(props: Props) {
                 <b>Round number: </b>{roundNumber}
             </div>
             }
-            {adminId.length > 0 &&
+            {adminId != undefined && adminId.length > 0 &&
                 <div className={cx('label')}>
                     <b>Admin: </b>{adminId}
                 </div>

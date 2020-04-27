@@ -16,7 +16,14 @@ const cx = classNames.bind(styles);
 
 let timeoutId: number;
 
-export default React.memo(function ChatInput() {
+type Props = {
+  gameUid: string;
+  currentMovieName: string;
+  roundNumber: number;
+}
+
+export default React.memo(function ChatInput(props: Props) {
+  const { gameUid, currentMovieName, roundNumber} = props;
   const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
   const [state] = useContext(getUIStateContext());
   const [inputText, setInputText] = useState('');
@@ -68,10 +75,29 @@ export default React.memo(function ChatInput() {
             if (event.keyCode === 13) {
               const sendingMessage = inputText.trim();
               const attendeeId = chime?.configuration?.credentials?.attendeeId;
+
+              var gameUidForMessage = '';
+              if (gameUid) {
+                gameUidForMessage = gameUid;
+              }
+
+              var currentMovieNameForMessage = ''
+              if (currentMovieName) {
+                currentMovieNameForMessage = currentMovieName;
+              }
+
+              var roundNumberForMessage = 0
+              if (roundNumber) {
+                roundNumberForMessage = roundNumber
+              }
+
               if (sendingMessage !== '' && attendeeId) {
                 chime?.sendMessage('chat-message', {
                   attendeeId,
-                  message: sendingMessage
+                  message: sendingMessage,
+                  gameUid: gameUidForMessage,
+                  movie: currentMovieNameForMessage,
+                  roundNumber: roundNumberForMessage
                 });
                 setInputText('');
               }

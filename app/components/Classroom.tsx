@@ -139,7 +139,7 @@ export default function Classroom() {
 
       // Show leaderboard.
     } else if (message.payload.eventType === 'successful_guess') {
-      console.log("Successful guess by ", message);
+      console.log("Successful guess by ", message.name);
     }
   }
 

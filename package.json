@@ -289,8 +289,6 @@
     "react-router-dom": "^5.1.2",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "collections/list": "^1.0.0",
-    "collections/map": "^1.0.0",
     "source-map-support": "^0.5.16"
   },
   "devEngines": {

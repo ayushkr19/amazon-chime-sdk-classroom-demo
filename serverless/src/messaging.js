@@ -183,8 +183,14 @@ exports.sendmessage = async event => {
       }        
       
       //Initialize the db with the game details
+      var flag=0;
+      var actor="";
       const dbCalls = attendees.Items.map(async record => {
         const attendee = record.AttendeeId.S;
+        if(flag===0){
+          actor = attendee;
+          flag++;
+        }
          try {
             await ddb
               .putItem({
@@ -215,6 +221,7 @@ exports.sendmessage = async event => {
      data.payload.message="Let the game begin";
      data.payload.eventType="start_round";
      data.payload.roundNumber = 1;
+     data.payload.actor=actor;
      postData = data;
     }
     //End of Start Game

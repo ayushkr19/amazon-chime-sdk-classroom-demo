@@ -1,6 +1,7 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-
+// var List = require("collections/list");
+// var Map = require("collections/map");
 const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB({ region: process.env.AWS_REGION });
@@ -224,7 +225,8 @@ exports.sendmessage = async event => {
      data.payload.actor=actor;
      postData = data;
       //End of Start Game
-    } else if (data.payload.eventType !== "end_round") {
+    } else if (data.payload.eventType === "end_round") {
+      console.log("Running for end round");
       // do a DDB call to get who is next with gameId 
       
       // leaderboard code starts
@@ -234,7 +236,7 @@ exports.sendmessage = async event => {
         try {
           await ddb 
             .getItem({
-              TableName: LEADER_BORAD_TABLE, 
+              TableName: GAME_TABLE_NAME, 
               Item: {
                 GameID: { S: gameUid}
               }
@@ -243,65 +245,43 @@ exports.sendmessage = async event => {
             console.error("Error while trying to get leaderBoard for: ${gameUid}");
         }
       }
-      var leaderBoard = new List();
-      var allAttendees = new List();
+      // list<map<string, string>>
+      // var leaderBoard = new List();
+      // var allAttendees = new List();
       var listLength = currentRecordOfGameUid.length;
+      var leaderBoard = [];
+      var allAttendees = [];
+      
       for(var i = 0; i < listLength; ++i) {
-        var currentRecord = currentRecordOfGameUid[i-1];
-        var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
-        allAttendees.add(currentRecord.AttendeeId);
-        leaderBoard.add(map);
+        var currentRecord = currentRecordOfGameUid[i];
+        leaderBoard.push([currentRecord.AttendeeId, currentRecord.Points]);
+        // var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
+        allAttendees.push(currentRecord.AttendeeId);
+        // allAttendees.add(currentRecord.AttendeeId);
+        // leaderBoard.add(map);
       }
       // get previous leaderBoard from currentLeaderBoard and build new one
       dataForFirstCall = data;
       dataForFirstCall.payload.message = leaderBoard; 
       dataForFirstCall.payload.type = "chat-message";
+      console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall.payload));
       postDataLeaderBoard = dataForFirstCall; 
       // post call for new leaderBoard
 
       // leaderboard code ends 
-
-      // send message for next playerId, movie, actor  
-      // attendee and actor are confusing 
       var previousRoundNumber = data.payload.roundNumber; 
-      var currentRoundNumner = roundNumber++; 
-      const ddbCallToUpdateMovie = attendees.Items.map(async record => {
-        const attendee = record.AttendeeId.S;
-         try {
-            await ddb
-              .putItem({
-                TableName: GAME_TABLE_NAME,
-                Item: {
-                  GameId: { S: gameUid },
-                  AttendeeId: { S: allAttendees.get(currentRoundNumner) },
-                  Movie: { S: movies[currentRoundNumner]},
-                  Points: { N: "0"},
-                  TTL: { N: `${oneDayFromNow}` }
-                }
-              })
-              .promise();
-          } catch (e) {
-            console.error(`error connecting: ${e.message}`);
-            return {
-              statusCode: 500,
-              body: `Failed to connect: ${JSON.stringify(err)}`
-            };
-        }
-      });
-      try {
-        await Promise.all(ddbCallToUpdateMovie);
-      } catch (e) {
-        console.error(`failed to post: ${e.message}`);
-        return { statusCode: 500, body: e.stack };
-     }
-     data.payload.message="Let the game begin";
-     data.payload.eventType="start_round";
-     data.payload.type="game_message";
-     data.payload.roundNumber = currentRoundNumner;
-     data.payload.actor=allAttendees.get(currentRoundNumner);
-     postData = data;
+      var currentRoundNumner = previousRoundNumber++;
+      var numberOfMovies = movies.length; 
+      data.payload.message="Let the new round begin";
+      data.payload.eventType="start_round";
+      data.payload.type="game_message";
+      data.payload.roundNumber = currentRoundNumner;
+      data.payload.movie = movies[currentRoundNumner % numberOfMovies];
+      data.payload.actor = allAttendees[currentRoundNumner];
+      console.log("Braodcasing message to all for next round: " + JSON.stringify(data.payload));
+      postData = data;
     } else if (data.payload.eventType !== "end_game") {
-      // todo - implement 
+      // todo - implement, would be similar to round end 
     }
     console.log("EndData : ", JSON.stringify(postData));
   }

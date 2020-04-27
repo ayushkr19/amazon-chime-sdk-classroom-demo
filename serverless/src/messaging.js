@@ -223,21 +223,119 @@ exports.sendmessage = async event => {
      data.payload.roundNumber = 1;
      data.payload.actor=actor;
      postData = data;
+      //End of Start Game
+    } else if (data.payload.eventType !== "end_round") {
+      // do a DDB call to get who is next with gameId 
+      
+      // leaderboard code starts
+      // we should get list of all gameUid matching
+      // traverse through that list and check points corresponing and post the data
+      const currentRecordOfGameUid = async() => {
+        try {
+          await ddb 
+            .getItem({
+              TableName: LEADER_BORAD_TABLE, 
+              Item: {
+                GameID: { S: gameUid}
+              }
+            }).promise();
+        } catch(e) {
+            console.error("Error while trying to get leaderBoard for: ${gameUid}");
+        }
+      }
+      var leaderBoard = new List();
+      var allAttendees = new List();
+      var listLength = currentRecordOfGameUid.length;
+      for(var i = 0; i < listLength; ++i) {
+        var currentRecord = currentRecordOfGameUid[i-1];
+        var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
+        allAttendees.add(currentRecord.AttendeeId);
+        leaderBoard.add(map);
+      }
+      // get previous leaderBoard from currentLeaderBoard and build new one
+      dataForFirstCall = data;
+      dataForFirstCall.payload.message = leaderBoard; 
+      dataForFirstCall.payload.type = "chat-message";
+      postDataLeaderBoard = dataForFirstCall; 
+      // post call for new leaderBoard
+
+      // leaderboard code ends 
+
+      // send message for next playerId, movie, actor  
+      // attendee and actor are confusing 
+      var previousRoundNumber = data.payload.roundNumber; 
+      var currentRoundNumner = roundNumber++; 
+      const ddbCallToUpdateMovie = attendees.Items.map(async record => {
+        const attendee = record.AttendeeId.S;
+         try {
+            await ddb
+              .putItem({
+                TableName: GAME_TABLE_NAME,
+                Item: {
+                  GameId: { S: gameUid },
+                  AttendeeId: { S: allAttendees.get(currentRoundNumner) },
+                  Movie: { S: movies[currentRoundNumner]},
+                  Points: { N: "0"},
+                  TTL: { N: `${oneDayFromNow}` }
+                }
+              })
+              .promise();
+          } catch (e) {
+            console.error(`error connecting: ${e.message}`);
+            return {
+              statusCode: 500,
+              body: `Failed to connect: ${JSON.stringify(err)}`
+            };
+        }
+      });
+      try {
+        await Promise.all(ddbCallToUpdateMovie);
+      } catch (e) {
+        console.error(`failed to post: ${e.message}`);
+        return { statusCode: 500, body: e.stack };
+     }
+     data.payload.message="Let the game begin";
+     data.payload.eventType="start_round";
+     data.payload.type="game_message";
+     data.payload.roundNumber = currentRoundNumner;
+     data.payload.actor=allAttendees.get(currentRoundNumner);
+     postData = data;
+    } else if (data.payload.eventType !== "end_game") {
+      // todo - implement 
     }
-    //End of Start Game
-
-
-
     console.log("EndData : ", JSON.stringify(postData));
   }
   
-  
-  
-  const postCalls = attendees.Items.map(async connection => {
+  const postCallsForLeaderBoard = attendees.Items.map(async connection => {
     const connectionId = connection.ConnectionId.S;
     try {
       await apigwManagementApi
         .postToConnection({ ConnectionId: connectionId, Data: postData })
+        .promise();
+    } catch (e) {
+      if (e.statusCode === 410) {
+        console.log(`found stale connection, skipping ${connectionId}`);
+      } else {
+        console.error(
+          `error posting to connection ${connectionId}: ${e.message}`
+        );
+      }
+    }
+  });
+  try {
+    await Promise.all(postCallsForLeaderBoard);
+  } catch (e) {
+    console.error(`failed to post: ${e.message}`);
+    return { statusCode: 500, body: e.stack };
+  }
+
+  // broadcast actual meessage
+  // 2 calls for end round  
+  const postCalls = attendees.Items.map(async connection => {
+    const connectionId = connection.ConnectionId.S;
+    try {
+      await apigwManagementApi
+        .postToConnection({ ConnectionId: connectionId, Data: postDataLeaderBoard })
         .promise();
     } catch (e) {
       if (e.statusCode === 410) {

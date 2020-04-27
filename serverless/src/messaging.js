@@ -260,10 +260,13 @@ exports.sendmessage = async event => {
         // allAttendees.add(currentRecord.AttendeeId);
         // leaderBoard.add(map);
       }
+      // dummy - data to test 
+      leaderBoard.push(["player", "score"]);
+      leaderBoard.push(["player1", "score1"]);
       // get previous leaderBoard from currentLeaderBoard and build new one
       dataForFirstCall = data;
-      dataForFirstCall.payload.message = leaderBoard; 
-      dataForFirstCall.payload.type = "chat-message";
+      dataForFirstCall.payload.message = convertNestedArrayToString(leaderBoard); 
+      dataForFirstCall.type = "chat-message";
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall.payload));
       postDataLeaderBoard = dataForFirstCall; 
       // post call for new leaderBoard
@@ -286,6 +289,22 @@ exports.sendmessage = async event => {
     console.log("EndData : ", JSON.stringify(postData));
   }
   
+  function convertNestedArrayToString(array) {
+    let string = "";
+      for (let item of array) {
+        if (Array.isArray(item)) {
+          // new line 
+          string += convertNestedArrayToString(item);
+          string += "/n"
+        } 
+        else {
+          string += item;
+          string += " /t ";
+        } 
+      }
+      return string;
+  }
+
   const postCallsForLeaderBoard = attendees.Items.map(async connection => {
     const connectionId = connection.ConnectionId.S;
     try {

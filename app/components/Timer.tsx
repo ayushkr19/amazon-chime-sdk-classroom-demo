@@ -71,7 +71,7 @@ export default function Timer(props: Props) {
         return (
             <div>
                 {/* Any String can be added here */}
-                WoooHoo !! Let's start a new journey.
+                The timer for each turn will appear here
             </div>
         );
     }

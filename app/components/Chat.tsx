@@ -50,8 +50,11 @@ export default function Chat(props: Props) {
 
 
         // TODO: Check if message is of type successful_guess
-
-        
+        if( message.name &&
+        message.payload.eventType === 'successful_guess') {
+        realTimeMessages.push(message);
+        setMessages(realTimeMessages.slice() as MessageType[]);
+        }
         onGameMessageReceived(message);
       }
     };
@@ -79,6 +82,12 @@ export default function Chat(props: Props) {
             messageString = message.payload.message;
           } else if (message.type === 'raise-hand') {
             messageString = `✋`;
+          } else if (message.type === 'game_message') {
+            if (message.payload.eventType === 'successful_guess') {
+              messageString = `Successful guess by ` + message.name;
+            } else {
+              messageString = message.payload.message;
+            }
           }
 
           return (

@@ -12,6 +12,7 @@ import getRosterContext from '../context/getRosterContext';
 import useRaisedHandAttendees from '../hooks/useRaisedHandAttendees';
 import RosterAttendeeType from '../types/RosterAttendeeType';
 import styles from './Roster.css';
+import useActiveActorHook from '../hooks/useActiveActor';
 
 const cx = classNames.bind(styles);
 
@@ -20,6 +21,7 @@ export default function Roster() {
   const roster = useContext(getRosterContext());
   const [videoAttendees, setVideoAttendees] = useState(new Set());
   const raisedHandAttendees = useRaisedHandAttendees();
+  const activeActorAttendeeId = useActiveActorHook();
   const intl = useIntl();
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function Roster() {
           return (
             <div key={attendeeId} className={cx('attendee')}>
               <div className={cx('name')}>{rosterAttendee.name}</div>
-              {raisedHandAttendees.has(attendeeId) && (
+              {activeActorAttendeeId === attendeeId && (
                 <div className={cx('raisedHand')}>
                   <span
                     role="img"
@@ -84,7 +86,7 @@ export default function Roster() {
                       }
                     )}
                   >
-                    ✋
+                    ⌛
                   </span>
                 </div>
               )}

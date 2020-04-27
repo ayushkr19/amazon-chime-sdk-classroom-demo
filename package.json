@@ -1,6 +1,6 @@
 {
   "name": "amazon-chime-sdk-classroom-demo",
-  "productName": "MyClassroom",
+  "productName": "ChimeSDKApp",
   "version": "1.0.0",
   "description": "Demonstrates how to use the Amazon Chime SDK to build an online classroom with Electron and React",
   "scripts": {
@@ -52,8 +52,8 @@
     ]
   },
   "build": {
-    "productName": "MyClassroom",
-    "appId": "com.amazonaws.services.chime.sdk.classroom.demo.MyClassroom",
+    "productName": "ChimeSDKApp",
+    "appId": "com.amazonaws.services.chime.sdk.classroom.demo.ChimeSDKApp",
     "artifactName": "${productName}.${ext}",
     "files": [
       "dist/",

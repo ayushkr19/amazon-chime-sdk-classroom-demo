@@ -26,6 +26,10 @@ import RemoteVideoGroup from './RemoteVideoGroup';
 import Roster from './Roster';
 import ScreenPicker from './ScreenPicker';
 import ScreenShareHeader from './ScreenShareHeader';
+import Timer from './Timer';
+import uuid from '../utils/getUid';
+import MessageType from '../types/MessageType';
+import GameInfo from './GameInfo';
 
 const cx = classNames.bind(styles);
 
@@ -38,6 +42,67 @@ export default function Classroom() {
   const [viewMode, setViewMode] = useState(ViewMode.Room);
   const [isModeTransitioning, setIsModeTransitioning] = useState(false);
   const [isPickerEnabled, setIsPickerEnabled] = useState(false);
+  const [gameUid, setGameUid] = useState("");
+  const [roundNumber, setRoundNumber] = useState(0);
+  const [adminId, setAdminId] = useState("");
+
+  const onClickGameModeButton = () => {
+    console.log("On click game mode");
+    const attendeeId = chime?.configuration?.credentials?.attendeeId;
+    if (attendeeId) {
+
+      // Start game
+      chime?.sendMessage('game_message', {
+        attendeeId,
+        message: "Start game bro.",
+        eventType: "start_game",
+        gameUid: uuid(),
+        adminId: attendeeId
+      });
+
+
+      // Start round
+      chime?.sendMessage('game_message', {
+        attendeeId,
+        message: "Start round bro.",
+        eventType: "start_round",
+        actorId: attendeeId,
+        roundNumber: 1
+      });
+    }
+  }
+
+  const onGameMessageReceived = (message: MessageType) => {
+    console.log("On game message received: ", message);
+
+    if (message.payload.eventType === 'start_game') {
+      // Set game uid
+      let newGameUid = message.payload.gameUid;
+      setGameUid(newGameUid);
+
+      // Need to set adminId here as well, so that cna trigger round end through admin's timer expiry.
+      setAdminId(message.payload.adminId);
+      
+      // Change backgrounds, or any UI changes can be implemented here.
+    } else if (message.payload.eventType === 'start_round') {
+      // Set the round number in the state.
+      setRoundNumber(message.payload.roundNumber);
+
+      // Highlight actor in Roster.
+      // This is being done in useActiveActor.tsx hook now.
+
+      // Reset timer and start counting down.
+
+    } else if (message.payload.eventType === 'end_round') {
+      // Show people who guessed correctly.
+
+      // Show leaderboard.
+    } else if (message.payload.eventType === 'end_game') {
+      // Show winners.
+
+      // Show leaderboard.
+    }
+  }
 
   const stopContentShare = async () => {
     setIsModeTransitioning(true);
@@ -128,6 +193,7 @@ export default function Classroom() {
                     onClickShareButton={() => {
                       setIsPickerEnabled(true);
                     }}
+                    onClickGameModeButton={onClickGameModeButton}
                   />
                 </div>
                 <div className={cx('localVideo')}>
@@ -138,8 +204,15 @@ export default function Classroom() {
             <div className={cx('right')}>
               <div className={cx('titleWrapper')}>
                 <div className={cx('title')}>{chime?.title}</div>
-                <div className={cx('label')}>
+                {/* <div className={cx('label')}>
                   <FormattedMessage id="Classroom.classroom" />
+                </div> */}
+                <div className={cx('label')}>
+                  <GameInfo gameUid={gameUid} roundNumber={roundNumber} adminId={adminId} />
+                </div>
+
+                <div className={cx('label')}>
+                  <Timer adminId={adminId}/>
                 </div>
               </div>
               <div className={cx('deviceSwitcher')}>
@@ -149,7 +222,7 @@ export default function Classroom() {
                 <Roster />
               </div>
               <div className={cx('chat')}>
-                <Chat />
+                <Chat onGameMessageReceived={onGameMessageReceived}/>
               </div>
             </div>
           </>

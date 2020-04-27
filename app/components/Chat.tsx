@@ -13,10 +13,16 @@ import ChatInput from './ChatInput';
 
 const cx = classNames.bind(styles);
 
-export default function Chat() {
+type Props = {
+  onGameMessageReceived: (message: MessageType) => void;
+};
+
+export default function Chat(props: Props) {
+  const {onGameMessageReceived } = props;
   const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
   const [messages, setMessages] = useState<MessageType[]>([]);
   const bottomElement = useRef(null);
+  
 
   useEffect(() => {
     const joinRoomMessaging = async () => {
@@ -27,6 +33,8 @@ export default function Chat() {
 
   useEffect(() => {
     const realTimeMessages: MessageType[] = [];
+
+    // TODO: Use Command pattern here to receive different kinds of messages.
     const callback = (message: MessageType) => {
       if (
         message.name &&
@@ -34,8 +42,12 @@ export default function Chat() {
       ) {
         realTimeMessages.push(message);
         setMessages(realTimeMessages.slice() as MessageType[]);
+      } else if (message.type === 'game_message') {
+        console.log("game messaage received");
+        onGameMessageReceived(message);
       }
     };
+
     chime?.subscribeToMessageUpdate(callback);
     return () => {
       chime?.unsubscribeFromMessageUpdate(callback);

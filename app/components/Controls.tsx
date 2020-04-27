@@ -26,10 +26,11 @@ enum VideoStatus {
 type Props = {
   viewMode: ViewMode;
   onClickShareButton: () => void;
+  onClickGameModeButton: () => void;
 };
 
 export default function Controls(props: Props) {
-  const { viewMode, onClickShareButton } = props;
+  const { viewMode, onClickShareButton, onClickGameModeButton} = props;
   const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
   const [state] = useContext(getUIStateContext());
   const history = useHistory();
@@ -74,7 +75,7 @@ export default function Controls(props: Props) {
         >
           <button
             type="button"
-            className={cx('focusButton', {
+            className={cx('endButton', {
               enabled: focus
             })}
             onClick={() => {
@@ -207,6 +208,25 @@ export default function Controls(props: Props) {
           </button>
         </Tooltip>
       )}
+
+      <Tooltip
+        tooltip={
+          state.classMode === ClassMode.Teacher
+            ? "Game mode"
+            : "Ask admin to start game"
+        }
+      >
+        <button
+          type="button"
+          className={cx('button')}
+          onClick={() => {
+            onClickGameModeButton();
+          }}
+        >
+          <i className="fas fa-gamepad" />
+        </button>
+      </Tooltip>
+      
     </div>
   );
 }

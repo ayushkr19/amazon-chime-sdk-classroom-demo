@@ -1,0 +1,15 @@
+.titleWrapper {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color_mine_shaft_light);
+}
+
+.title {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--color_silver_chalice);
+}

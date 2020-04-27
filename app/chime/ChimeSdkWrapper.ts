@@ -589,6 +589,7 @@ export default class ChimeSdkWrapper implements DeviceChangeObserver {
   };
 
   private publishMessageUpdate = (message: MessageType) => {
+    console.log("Message being updated is: ", message);
     for (let i = 0; i < this.messageUpdateCallbacks.length; i += 1) {
       const callback = this.messageUpdateCallbacks[i];
       callback(message);

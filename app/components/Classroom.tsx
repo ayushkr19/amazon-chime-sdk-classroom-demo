@@ -56,14 +56,17 @@ export default function Classroom() {
     if (attendeeId) {
       setAttendeeIdState(attendeeId);
       var newGameId = uuid();
-      if (gameUid.length === 0) {
+
+      var gameRoom = chime?.title
+      if (gameUid.length === 0 && gameRoom != null && gameRoom !== undefined) {
         // Start game only if a game Id already doesn't exist.
         chime?.sendMessage('game_message', {
           attendeeId,
           message: "Start game bro.",
           eventType: "start_game",
           gameUid: newGameId,
-          adminId: attendeeId
+          adminId: attendeeId,
+          gameRoom: gameRoom
         });
         setGameUid(newGameId);
       }

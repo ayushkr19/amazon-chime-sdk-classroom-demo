@@ -12,16 +12,19 @@ import getRosterContext from '../context/getRosterContext';
 import useRaisedHandAttendees from '../hooks/useRaisedHandAttendees';
 import RosterAttendeeType from '../types/RosterAttendeeType';
 import styles from './Roster.css';
-import useActiveActorHook from '../hooks/useActiveActor';
+
+type Props = {
+  activeActorAttendeeId: string;
+}
 
 const cx = classNames.bind(styles);
 
-export default function Roster() {
+export default function Roster(props: Props) {
+  const { activeActorAttendeeId } = props;
   const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
   const roster = useContext(getRosterContext());
   const [videoAttendees, setVideoAttendees] = useState(new Set());
   const raisedHandAttendees = useRaisedHandAttendees();
-  const activeActorAttendeeId = useActiveActorHook();
   const intl = useIntl();
 
   useEffect(() => {

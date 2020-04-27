@@ -47,6 +47,11 @@ export default function Chat(props: Props) {
         setMessages(realTimeMessages.slice() as MessageType[]);
       } else if (message.type === 'game_message') {
         console.log("game messaage received");
+
+
+        // TODO: Check if message is of type successful_guess
+
+        
         onGameMessageReceived(message);
       }
     };

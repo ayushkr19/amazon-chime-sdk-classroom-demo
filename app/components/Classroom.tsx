@@ -30,6 +30,7 @@ import Timer from './Timer';
 import uuid from '../utils/getUid';
 import MessageType from '../types/MessageType';
 import GameInfo from './GameInfo';
+import useActiveActorHook from '../hooks/useActiveActor';
 
 const cx = classNames.bind(styles);
 
@@ -46,11 +47,14 @@ export default function Classroom() {
   const [roundNumber, setRoundNumber] = useState(0);
   const [adminId, setAdminId] = useState("");
   const [currentMovieName, setCurrentMovieName] = useState("");
+  const [activeActorAttendeeId, setActiveActorAttendeeId] = useState("");
+  const [attendeeIdState, setAttendeeIdState] = useState("");
 
   const onClickGameModeButton = () => {
     console.log("On click game mode");
     const attendeeId = chime?.configuration?.credentials?.attendeeId;
     if (attendeeId) {
+      setAttendeeIdState(attendeeId);
       var newGameId = uuid();
       if (gameUid.length === 0) {
         // Start game only if a game Id already doesn't exist.
@@ -96,6 +100,12 @@ export default function Classroom() {
         setAdminId(message.payload.adminId);
       }
 
+      // If attendeeId state is not already set, then set it to Classroom's state
+      var actualAttendeeId = chime?.configuration?.credentials?.attendeeId;
+      if (attendeeIdState.length === 0 && actualAttendeeId != undefined && actualAttendeeId != null) {
+        setAttendeeIdState(actualAttendeeId);
+      }
+
       // If gameUid is not already set, then set the GameUid.
       if (gameUid.length === 0) {
         setGameUid(message.payload.gameUid);
@@ -103,6 +113,16 @@ export default function Classroom() {
 
       // Highlight actor in Roster.
       // This is being done in useActiveActor.tsx hook now.
+      // Setting the active actor in Classroom's state.
+      setActiveActorAttendeeId(message.payload.actor);
+
+      // Mute if we are the actor.
+      const attendeeId = chime?.configuration?.credentials?.attendeeId;
+      if (attendeeId === message.payload.actor) {
+        // Mute
+        console.log("Muting audio locally as we are the actor");
+        chime?.audioVideo?.realtimeMuteLocalAudio();
+      }
 
       // Reset timer and start counting down.
       // This is already implemented in Timer.tsx.
@@ -118,6 +138,8 @@ export default function Classroom() {
       // Show winners.
 
       // Show leaderboard.
+    } else if (message.payload.eventType === 'successful_guess') {
+      console.log("Successful guess by ", message);
     }
   }
 
@@ -221,11 +243,9 @@ export default function Classroom() {
             <div className={cx('right')}>
               <div className={cx('titleWrapper')}>
                 <div className={cx('title')}>{chime?.title}</div>
-                {/* <div className={cx('label')}>
-                  <FormattedMessage id="Classroom.classroom" />
-                </div> */}
                 <div className={cx('label')}>
-                  <GameInfo gameUid={gameUid} roundNumber={roundNumber} adminId={adminId} currentMovieName={currentMovieName} />
+                  <GameInfo gameUid={gameUid} roundNumber={roundNumber} adminId={adminId} currentMovieName={currentMovieName} 
+                  activeActorAttendeeId={activeActorAttendeeId} attendeeIdState={attendeeIdState} />
                 </div>
 
                 <div className={cx('label')}>
@@ -236,7 +256,7 @@ export default function Classroom() {
                 <DeviceSwitcher />
               </div>
               <div className={cx('roster')}>
-                <Roster />
+                <Roster activeActorAttendeeId={activeActorAttendeeId} />
               </div>
               <div className={cx('chat')}>
                 <Chat onGameMessageReceived={onGameMessageReceived} gameUid={gameUid} currentMovieName={currentMovieName} roundNumber={roundNumber} />

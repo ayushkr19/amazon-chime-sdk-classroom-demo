@@ -3,6 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import ChimeSdkWrapper from '../chime/ChimeSdkWrapper';
 import getChimeContext from '../context/getChimeContext';
 import MessageType from '../types/MessageType';
+import moment from 'moment';
 
 type Props = {
     adminId: string;
@@ -62,7 +63,7 @@ export default function Timer(props: Props) {
     if (showTimer) {
         return (
             <div>
-                {time} seconds left
+                {moment(time*1000).utc().format('mm:ss')} time left
             </div>
         );
     }

@@ -222,7 +222,8 @@ exports.sendmessage = async event => {
      data.payload.eventType="start_round";
      data.payload.roundNumber = 1;
      data.payload.actor=actor;
-     postData = data;
+     data.payload.movie=movies[0];
+     postData = JSON.stringify(data);
     }
     //End of Start Game
 

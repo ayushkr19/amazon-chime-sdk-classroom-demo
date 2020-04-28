@@ -75,16 +75,16 @@ export default function Timer(props: Props) {
 
     if (showTimer) {
         return (
-            <div className={(time <= 10 && time != 0) ? cx('font') : cx('color')}>
+            <div className={(time <= 10 && time != 0) ? cx('lastTick') : cx('normalTick')}>
                 {moment(time*1000).utc().format('mm:ss')} time left
             </div>
         );
     }
     else {
         return (
-            <div>
+            <div className={cx('initialDisplay')}> 
                 {/* Any String can be added here */}
-                The timer for each turn will appear here
+                Timer ⏲️ ticks here !
             </div>
         );
     }

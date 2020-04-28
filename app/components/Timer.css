@@ -2,16 +2,32 @@
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-.color {
-    color: white;
+.normalTick {
+    color: var(--color_alabaster) !important;
+    font-size: 1.3rem;
 }
- .font {
+.lastTick {
     animation: fontbulger 1s infinite;
-    color: white;
+    color: var(--color_alabaster) !important;
+    font-size: 1.3rem;
  }
+.initialDisplay{
+    color: var(--color_alabaster) !important;
+    font-size: 1.1rem;
+}
 
 @keyframes fontbulger {
+    0% {
+        opacity: 0.5;
+        font-size: 1.3rem;
+    }
+    50% {
+        font-size: 1.7rem;
+        opacity: 1;
+    }
     100% {
-        font-size: 15px;
+        opacity: 0.5;
+        font-size: 1.3rem;
     }
 }
+  

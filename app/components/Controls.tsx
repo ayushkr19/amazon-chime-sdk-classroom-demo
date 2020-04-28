@@ -172,7 +172,7 @@ export default function Controls(props: Props) {
           )}
         </button>
       </Tooltip>
-      {state.classMode === ClassMode.Teacher &&
+      {/* {state.classMode === ClassMode.Teacher &&
         viewMode !== ViewMode.ScreenShare && (
           <Tooltip
             tooltip={intl.formatMessage({ id: 'Controls.shareScreenTooltip' })}
@@ -187,7 +187,7 @@ export default function Controls(props: Props) {
               <i className="fas fa-desktop" />
             </button>
           </Tooltip>
-        )}
+        )} */}
       {viewMode !== ViewMode.ScreenShare && (
         <Tooltip
           tooltip={
@@ -218,7 +218,7 @@ export default function Controls(props: Props) {
       >
         <button
           type="button"
-          className={cx('button')}
+          className={cx('gameButton')}
           onClick={() => {
             onClickGameModeButton();
           }}

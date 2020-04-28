@@ -105,7 +105,7 @@ export default React.memo(function ChatInput(props: Props) {
           }}
           placeholder={intl.formatMessage({ id: 'ChatInput.inputPlaceholder' })}
         />
-        {state.classMode === ClassMode.Student && (
+        {/* {state.classMode === ClassMode.Student && (
           <button
             type="button"
             className={cx('raiseHandButton', {
@@ -124,7 +124,7 @@ export default React.memo(function ChatInput(props: Props) {
               ✋
             </span>
           </button>
-        )}
+        )} */}
       </form>
     </div>
   );

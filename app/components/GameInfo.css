@@ -10,6 +10,6 @@
 }
 
 .label {
-  font-size: 0.8rem;
-  color: var(--color_silver_chalice);
+  color: var(--color_alabaster) !important;
+  font-size: 1.3rem;
 }

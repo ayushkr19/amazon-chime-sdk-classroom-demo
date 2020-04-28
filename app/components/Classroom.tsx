@@ -258,9 +258,9 @@ export default function Classroom() {
                   <Timer adminId={adminId} gameUid={gameUid} roundNumber={roundNumber} attendeeIdToName={attendeeIdToName}/>
                 </div>
               </div>
-              <div className={cx('deviceSwitcher')}>
+              {/* <div className={cx('deviceSwitcher')}>
                 <DeviceSwitcher />
-              </div>
+              </div> */}
               <div className={cx('roster')}>
                 <Roster activeActorAttendeeId={activeActorAttendeeId} />
               </div>

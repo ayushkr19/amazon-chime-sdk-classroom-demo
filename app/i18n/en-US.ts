@@ -21,11 +21,11 @@ export default {
   'Login.studentToggleDescription2': `Send chat messages`,
   'Login.studentButton': `I'm a player`,
 
-  'CreateOrJoin.teacherTitle': `Host or join a game`,
+  'CreateOrJoin.teacherTitle': `Dumb Charades 🎭`,
   'CreateOrJoin.studentTitle': `Join a game`,
-  'CreateOrJoin.titlePlaceholder': `Game`,
-  'CreateOrJoin.namePlaceholder': `Your name`,
-  'CreateOrJoin.continueButton': `Continue`,
+  'CreateOrJoin.titlePlaceholder': `Game Room Name`,
+  'CreateOrJoin.namePlaceholder': `Your Alias`,
+  'CreateOrJoin.continueButton': `Take Me Inside`,
   'CreateOrJoin.notTeacherLink': `Not a host? Click here.`,
   'CreateOrJoin.notStudentLink': `Not a player? Click here.`,
   'CreateOrJoin.classRoomDoesNotExist': `Game does not exist`,
@@ -33,7 +33,7 @@ export default {
 
   'Classroom.classroom': `Game`,
 
-  'RemoteVideoGroup.noVideo': `No one is sharing video`,
+  'RemoteVideoGroup.noVideo': `Welcome to your favoutite Stress-Buster App 🙂`,
 
   'DeviceSwitcher.noAudioInputPlaceholder': `No microphone`,
   'DeviceSwitcher.noAudioOutputPlaceholder': `No speaker`,
@@ -62,7 +62,7 @@ export default {
   'ScreenShareHeader.stopSharing': `Stop sharing`,
   'ScreenShareHeader.online': `{number} online`,
 
-  'ChatInput.inputPlaceholder': `Type a chat message`,
+  'ChatInput.inputPlaceholder': `Any Guesses ??`,
   'ChatInput.raiseHandAriaLabel': `Raise hand`,
 
   'Roster.raiseHandAriaLabel': `Raised hand by {name}`,

@@ -29,8 +29,10 @@ import ScreenShareHeader from './ScreenShareHeader';
 import Timer from './Timer';
 import uuid from '../utils/getUid';
 import MessageType from '../types/MessageType';
+import GameScoreType from "../types/GameScoreType";
 import GameInfo from './GameInfo';
 import useActiveActorHook from '../hooks/useActiveActor';
+import Table from "react-bootstrap/lib/Table";
 
 const cx = classNames.bind(styles);
 
@@ -43,12 +45,14 @@ export default function Classroom() {
   const [viewMode, setViewMode] = useState(ViewMode.Room);
   const [isModeTransitioning, setIsModeTransitioning] = useState(false);
   const [isPickerEnabled, setIsPickerEnabled] = useState(false);
+  const [isLeaderBoardEnabled, setIsLeaderBoardEnabled] = useState(true);
   const [gameUid, setGameUid] = useState("");
   const [roundNumber, setRoundNumber] = useState(0);
   const [adminId, setAdminId] = useState("");
   const [currentMovieName, setCurrentMovieName] = useState("");
   const [activeActorAttendeeId, setActiveActorAttendeeId] = useState("");
   const [attendeeIdState, setAttendeeIdState] = useState("");
+  const [scoreBoard, setScoreBoard] = useState<GameScoreType[]>([]);
 
   const onClickGameModeButton = () => {
     console.log("On click game mode");
@@ -82,6 +86,10 @@ export default function Classroom() {
     }
   }
 
+  const onClickCancelButton = () => {
+    setIsLeaderBoardEnabled(false);
+  }
+
   const onGameMessageReceived = (message: MessageType) => {
     console.log("On game message received: ", message);
 
@@ -96,6 +104,7 @@ export default function Classroom() {
       
       // Change backgrounds, or any UI changes can be implemented here.
     } else if (message.payload.eventType === 'start_round') {
+      console.log("Start round message received.");
       // Set the round number in the state.
       setRoundNumber(message.payload.roundNumber);
 
@@ -135,10 +144,19 @@ export default function Classroom() {
 
     } else if (message.payload.eventType === 'end_round') {
       // Show people who guessed correctly.
+      console.log("Round End, show leaderboard");
 
       // Show leaderboard.
     } else if (message.payload.eventType === 'end_game') {
       // Show winners.
+      // const scores = message.payload.message;
+      const scores = [
+        { name:"Ayush", score:100 },
+        { name:"Parth", score:100 },
+        { name:"Harshit", score:100 },
+      ];
+      setScoreBoard(scores);
+      setIsLeaderBoardEnabled(true);
 
       // Show leaderboard.
     } else if (message.payload.eventType === 'successful_guess') {
@@ -266,6 +284,45 @@ export default function Classroom() {
               </div>
             </div>
           </>
+          <Modal
+            isOpen={isLeaderBoardEnabled}
+            contentLabel="Leader Board"
+            className={cx('modal')}
+            overlayClassName={cx('modalOverlay')}
+            onRequestClose={() => {
+              setIsPickerEnabled(false);
+            }}
+          >
+            <Table striped boardered condensed hover className={cx('leaderBoard')}>
+              <thead>
+              <tr>
+                <th>Player</th>
+                <th>Score</th>
+              </tr>
+              </thead>
+              <tbody>
+              {scoreBoard.map((row, index) => (
+                  <tr key={row.name}>
+                    <td>{row.name}</td>
+                    <td>{row.score}</td>
+                  </tr>
+              )
+              )}
+              </tbody>
+            </Table>
+
+            <div className={cx('buttons')}>
+              <button
+                  type="button"
+                  className={cx('cancelButton')}
+                  onClick={() => {
+                    onClickCancelButton();
+                  }}
+              >
+                <FormattedMessage id="LeaderBoard.close" />
+              </button>
+              </div>
+          </Modal>
           <Modal
             isOpen={isPickerEnabled}
             contentLabel="Screen picker"

@@ -58,6 +58,7 @@ export default {
   'ScreenPicker.noScreen': `No screen`,
   'ScreenPicker.cancel': `Cancel`,
   'ScreenPicker.share': `Share`,
+  'LeaderBoard.close': `Close`,
 
   'ScreenShareHeader.stopSharing': `Stop sharing`,
   'ScreenShareHeader.online': `{number} online`,

@@ -155,8 +155,8 @@ exports.sendmessage = async event => {
 
   var postData = JSON.parse(event.body).data;
   var data = JSON.parse(JSON.parse(event.body).data);
-  
-  console.log("Attendees: ",attendees)
+
+  console.log("Attendees: ", attendees)
 
   var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo",
     "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube",
@@ -169,7 +169,7 @@ exports.sendmessage = async event => {
     var guess = data.payload.message;
     var attendeeId = data.payload.attendeeId;
 
-  if (guess.toUpperCase() === movie.toUpperCase()) {
+    if (guess.toUpperCase() === movie.toUpperCase()) {
       try {
         var score = await docClient
           .update({
@@ -199,26 +199,29 @@ exports.sendmessage = async event => {
     if (data.payload.eventType === "start_game") {
 
       var gameUid = data.payload.gameUid;
-      var gameRoom = data.payload.gameRoom;
+      var gameRoom = data.payload.gameRoom.toLowerCase();
       var gameRoomVal = (gameRoom).concat("/");
       var attendeeIdToNameMap = {};
-      
+
       attendees.Items.map(async attendee => {
         var attendeeIdWithRoom = (gameRoomVal).concat(attendee.AttendeeId.S);
-        console.log("Generated",attendeeIdWithRoom);
+        console.log("Generated", attendeeIdWithRoom);
         try {
           var name = await ddb
-           .query({
+            .query({
               ExpressionAttributeValues: {
-               ':attendeeId': { S: attendeeIdWithRoom }
-            },
-             KeyConditionExpression: 'AttendeeId = :attendeeId',
-             TableName: ATTENDEES_TABLE_NAME
-          })
+                ':attendeeId': { S: attendeeIdWithRoom }
+              },
+              KeyConditionExpression: 'AttendeeId = :attendeeId',
+              TableName: ATTENDEES_TABLE_NAME
+            })
             .promise();
-          } catch (e) {
-           return { statusCode: 500, body: e.stack };
-        } 
+        } catch (e) {
+          return { statusCode: 500, body: e.stack };
+        }
+
+        console.log("Results from DDB: ", name);
+        console.log("Results from DDB items: ", name.Items);
         attendeeIdToNameMap[attendee.AttendeeId.S] = name.Items[0].Name.S;
       });
 
@@ -322,6 +325,7 @@ exports.sendmessage = async event => {
       }
 
       console.log("Current record: ", currentRecordOfGameUid);
+      console.log("Current record JSON: ", JSON.stringify(currentRecordOfGameUid));
 
       // list<map<string, string>>
       // var leaderBoard = new List();
@@ -334,7 +338,11 @@ exports.sendmessage = async event => {
 
       for (var i = 0; i < listLength; ++i) {
         var currentRecord = currentRecordOfGameUid.Items[i];
-        leaderBoard[attendeeIdToNameMap[currentRecord.AttendeeId.S]]=currentRecord.Points.N;
+        console.log("-> currentRecord: ", currentRecord);
+        console.log("-> attendeeIdToNameMap: ", attendeeIdToNameMap);
+        var name = attendeeIdToNameMap[currentRecord.AttendeeId.S];
+        console.log("-> name: ", name);
+        leaderBoard[name] = currentRecord.Points.N;
         // var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
         allAttendees.push(currentRecord.AttendeeId.S);
         allMovies.push(currentRecord.Movie.S);
@@ -353,9 +361,9 @@ exports.sendmessage = async event => {
       dataForFirstCall.type = "chat-message";
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall));
       postDataLeaderBoard = JSON.stringify(dataForFirstCall);
-      
-      
-      
+
+
+
       // post call for new leaderBoard
       // broadcast actual meessage
       // 2 calls for end round
@@ -381,9 +389,8 @@ exports.sendmessage = async event => {
         console.error(`failed to post: ${e.message}`);
         return { statusCode: 500, body: e.stack };
       }
-      return { statusCode: 200, body: 'Data sent.' };
-  
-      
+
+
 
       // leaderboard code ends
       var previousRoundNumber = data.payload.roundNumber;

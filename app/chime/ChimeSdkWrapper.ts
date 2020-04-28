@@ -353,7 +353,9 @@ export default class ChimeSdkWrapper implements DeviceChangeObserver {
 
     this.messagingSocket.addEventListener('message', (event: Event) => {
       try {
+        console.log(" ==> Recieved event", event);
         const data = JSON.parse((event as MessageEvent).data);
+        console.log(" ==> Recieved event data", data);
         const { attendeeId } = data.payload;
 
         let name;
@@ -382,6 +384,7 @@ export default class ChimeSdkWrapper implements DeviceChangeObserver {
       message: 'sendmessage',
       data: JSON.stringify({ type, payload })
     };
+    console.log(" => Sending message: ", message);
     try {
       this.messagingSocket.send(JSON.stringify(message));
     } catch (error) {
@@ -589,7 +592,7 @@ export default class ChimeSdkWrapper implements DeviceChangeObserver {
   };
 
   private publishMessageUpdate = (message: MessageType) => {
-    console.log("Message being updated is: ", message);
+    console.log("=> Input message: ", message);
     for (let i = 0; i < this.messageUpdateCallbacks.length; i += 1) {
       const callback = this.messageUpdateCallbacks[i];
       callback(message);

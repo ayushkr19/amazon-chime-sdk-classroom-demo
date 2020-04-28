@@ -9,10 +9,11 @@ type Props = {
     adminId: string;
     gameUid: string;
     roundNumber: number;
+    attendeeIdToName: Object
 }
 
 export default function Timer(props: Props) {
-    const { adminId , gameUid, roundNumber} = props;
+    const { adminId, gameUid, roundNumber, attendeeIdToName} = props;
     const [time, setTime] = useState(20);
     const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
     const [showTimer, setShowTimer] = useState(false);
@@ -32,7 +33,8 @@ export default function Timer(props: Props) {
                     eventType: "end_round", 
                     roundNumber: roundNumber,
                     gameUid: gameUid,
-                    adminId: adminId
+                    adminId: adminId,
+                    attendeeIdToName: attendeeIdToName
                 });
             }
         }

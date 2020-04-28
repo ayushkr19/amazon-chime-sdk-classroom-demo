@@ -49,6 +49,7 @@ export default function Classroom() {
   const [currentMovieName, setCurrentMovieName] = useState("");
   const [activeActorAttendeeId, setActiveActorAttendeeId] = useState("");
   const [attendeeIdState, setAttendeeIdState] = useState("");
+  const [attendeeIdToName, setattendeeIdToName] = useState({});
 
   const onClickGameModeButton = () => {
     console.log("On click game mode");
@@ -132,6 +133,8 @@ export default function Classroom() {
 
       // TODO: Show movie name only to the actor.
       setCurrentMovieName(message.payload.movie);
+
+      setattendeeIdToName(message.payload.attendeeIdToName);
 
     } else if (message.payload.eventType === 'end_round') {
       // Show people who guessed correctly.
@@ -252,7 +255,7 @@ export default function Classroom() {
                 </div>
 
                 <div className={cx('label')}>
-                  <Timer adminId={adminId} gameUid={gameUid} roundNumber={roundNumber}/>
+                  <Timer adminId={adminId} gameUid={gameUid} roundNumber={roundNumber} attendeeIdToName={attendeeIdToName}/>
                 </div>
               </div>
               <div className={cx('deviceSwitcher')}>

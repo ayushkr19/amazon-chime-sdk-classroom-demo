@@ -11,6 +11,7 @@ chime.endpoint = new AWS.Endpoint(
 );
 const { CONNECTIONS_TABLE_NAME } = process.env;
 const { GAME_TABLE_NAME } = process.env;
+const { ATTENDEES_TABLE_NAME } = process.env;
 const strictVerify = true;
 
 exports.authorize = async (event, context, callback) => {
@@ -154,6 +155,8 @@ exports.sendmessage = async event => {
   var postData = JSON.parse(event.body).data;
 
   var data = JSON.parse(JSON.parse(event.body).data);
+  console.log("Attendees: ", attendees);
+
 
   var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo",
     "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube",
@@ -196,7 +199,33 @@ exports.sendmessage = async event => {
     if (data.payload.eventType === "start_game") {
 
       var gameUid = data.payload.gameUid;
+      var gameRoom = data.payload.gameRoom;
+      var gameRoomVal = (gameRoom).concat("/");
+      var attendeeIdToNameMap = {};
 
+
+      attendees.Items.map(async attendee => {
+        var attendeeIdWithRoom = (gameRoomVal).concat(attendee.AttendeeId.S);
+        console.log("Generated", attendeeIdWithRoom);
+        try {
+          var name = await ddb
+            .query({
+              ExpressionAttributeValues: {
+                ':attendeeId': { S: attendeeIdWithRoom }
+              },
+              KeyConditionExpression: 'AttendeeId = :attendeeId',
+              TableName: ATTENDEES_TABLE_NAME
+            })
+            .promise();
+        } catch (e) {
+          return { statusCode: 500, body: e.stack };
+        }
+        console.log("1 attendeeIdToNameMap", attendeeIdToNameMap);
+        console.log("2 name", name);
+        attendeeIdToNameMap[attendee.AttendeeId.S] = name.Items[0].Name.S;
+      });
+
+      console.log("3 attendeeIdToNameMap", attendeeIdToNameMap);
       //Shuffle Movies Array
       var currentIndex = movies.length, temporaryValue, randomIndex;
       while (0 !== currentIndex) {
@@ -245,11 +274,14 @@ exports.sendmessage = async event => {
         console.error(`failed to post: ${e.message}`);
         return { statusCode: 500, body: e.stack };
       }
+      console.log("4 attendeeIdToNameMap", attendeeIdToNameMap);
+
       data.payload.message = "Let the game begin";
       data.payload.eventType = "start_round";
       data.payload.roundNumber = 1;
       data.payload.actor = actor;
       data.payload.movie = movies[0];
+      data.payload.attendeeIdToName = attendeeIdToNameMap;
       postData = JSON.stringify(data);
 
       //End of Start Game
@@ -257,6 +289,7 @@ exports.sendmessage = async event => {
       console.log("Running for end round");
       // do a DDB call to get who is next with gameId
       var gameUid = data.payload.gameUid;
+      var attendeeIdToNameMap = data.payload.attendeeIdToName;
 
       // leaderboard code starts
       // we should get list of all gameUid matching
@@ -301,13 +334,16 @@ exports.sendmessage = async event => {
       // var allAttendees = new List();
       var listLength = currentRecordOfGameUid.Items.length;
       console.log("List item length", listLength);
-      var leaderBoard = [];
+      var leaderBoard = {};
       var allAttendees = [];
       var allMovies = [];
 
       for (var i = 0; i < listLength; ++i) {
         var currentRecord = currentRecordOfGameUid.Items[i];
-        leaderBoard.push([currentRecord.AttendeeId.S, currentRecord.Points.N]);
+        console.log("-> currentRecord", currentRecord);
+        var name1 = attendeeIdToNameMap[currentRecord.AttendeeId.S];
+        console.log("-> name: ", name1);
+        leaderBoard[name1] = currentRecord.Points.N;
         // var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
         allAttendees.push(currentRecord.AttendeeId.S);
         allMovies.push(currentRecord.Movie.S);
@@ -322,28 +358,42 @@ exports.sendmessage = async event => {
       // leaderBoard.push(["player1", "score1"]);
       // get previous leaderBoard from currentLeaderBoard and build new one
       dataForFirstCall = data;
-      dataForFirstCall.payload.message = convertNestedArrayToString(leaderBoard);
-      dataForFirstCall.type = "chat-message";
+      dataForFirstCall.payload.message = JSON.stringify(leaderBoard);
+      var previousRoundNumber = data.payload.roundNumber;
+
+      if (previousRoundNumber < listLength) {
+        dataForFirstCall.type = "game_message";
+        dataForFirstCall.payload.eventType = "leaderboard";
+      } else {
+        dataForFirstCall.type = "game_message";
+        dataForFirstCall.payload.eventType = "end_game";
+      }
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall));
       postDataLeaderBoard = JSON.stringify(dataForFirstCall);
       // post call for new leaderBoard
 
       // leaderboard code ends
-      var previousRoundNumber = data.payload.roundNumber;
+      // var previousRoundNumber = data.payload.roundNumber;
       console.log("Previous round number: ", previousRoundNumber);
       var currentRoundNumner = previousRoundNumber + 1;
       console.log("Current round number: ", currentRoundNumner);
       var numberOfMovies = movies.length;
       data.payload.message = "Let the new round begin";
-      data.payload.eventType = "start_round";
-      data.type = "game_message";
+
+      if (previousRoundNumber < listLength) {
+        data.type = "game_message";
+        data.payload.eventType = "start_round";
+
+      } else {
+        data.type = "game_message";
+        data.payload.eventType = "end_game";
+      }
+
       data.payload.roundNumber = currentRoundNumner;
       data.payload.movie = allMovies[currentRoundNumner - 1];
       data.payload.actor = allAttendees[currentRoundNumner - 1];
       console.log("Braodcasing message to all for next round: " + JSON.stringify(data));
       postData = JSON.stringify(data);
-    } else if (data.payload.eventType === "end_game") {
-      // todo - implement, would be similar to round end
     }
     console.log("EndData : ", JSON.stringify(postData));
   }
@@ -389,6 +439,9 @@ exports.sendmessage = async event => {
 
   // broadcast actual meessage
   // 2 calls for end round
+  // console.log(postDataLeaderBoard);
+  // if(postDataLeaderBoard !== 'undefined' && postDataLeaderBoard !== null) {
+  console.log("Code in leaderboard message");
   const postCalls = attendees.Items.map(async connection => {
     const connectionId = connection.ConnectionId.S;
     try {
@@ -411,5 +464,6 @@ exports.sendmessage = async event => {
     console.error(`failed to post: ${e.message}`);
     return { statusCode: 500, body: e.stack };
   }
+  // }
   return { statusCode: 200, body: 'Data sent.' };
 };

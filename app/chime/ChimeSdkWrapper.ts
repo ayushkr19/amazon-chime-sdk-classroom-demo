@@ -382,6 +382,7 @@ export default class ChimeSdkWrapper implements DeviceChangeObserver {
       message: 'sendmessage',
       data: JSON.stringify({ type, payload })
     };
+    console.log("Sent: ", message);
     try {
       this.messagingSocket.send(JSON.stringify(message));
     } catch (error) {

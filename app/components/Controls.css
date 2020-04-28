@@ -2,6 +2,9 @@
  * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+.hide {
+  visibility: hidden;
+}
 
 .controls {
   display: block;
@@ -87,4 +90,8 @@
 
 .endButton {
   background: var(--color_thunderbird) !important;
+}
+
+.gameButton {
+  background: var(--color_gamegreen) !important;
 }

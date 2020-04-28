@@ -19,21 +19,21 @@ export default function GameInfo(props: Props) {
     // TOOD: Current movie name to be displayed only to the actor.
     return (
         <div>
-            {gameUid != undefined && gameUid.length > 0 &&
+            {/* {gameUid != undefined && gameUid.length > 0 &&
                 <div className={cx('label')}>
                     <b>Game ID: </b> {gameUid}
                 </div>
-            }
+            } */}
             {roundNumber > 0 && 
             <div className={cx('label')}>
                 <b>Round number: </b>{roundNumber}
             </div>
             }
-            {adminId != undefined && adminId.length > 0 &&
+            {/* {adminId != undefined && adminId.length > 0 &&
                 <div className={cx('label')}>
                     <b>Admin: </b>{adminId}
                 </div>
-            }
+            } */}
             {
                 activeActorAttendeeId != undefined && attendeeIdState != undefined && 
                 activeActorAttendeeId.length > 0 && attendeeIdState === activeActorAttendeeId && 

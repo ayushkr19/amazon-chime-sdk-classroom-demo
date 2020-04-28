@@ -65,7 +65,7 @@ export default function Controls(props: Props) {
       <div className={cx('micMuted')}>
         <FormattedMessage id="Controls.micMutedInScreenViewMode" />
       </div>
-      {state.classMode === ClassMode.Teacher && viewMode === ViewMode.Room && (
+      {/* {state.classMode === ClassMode.Teacher && viewMode === ViewMode.Room && (
         <Tooltip
           tooltip={
             focus
@@ -75,7 +75,7 @@ export default function Controls(props: Props) {
         >
           <button
             type="button"
-            className={cx('endButton', {
+            className={cx('endButton hide', {
               enabled: focus
             })}
             onClick={() => {
@@ -97,7 +97,7 @@ export default function Controls(props: Props) {
             )}
           </button>
         </Tooltip>
-      )}
+      )} */}
       <Tooltip
         tooltip={
           muted
@@ -172,14 +172,14 @@ export default function Controls(props: Props) {
           )}
         </button>
       </Tooltip>
-      {state.classMode === ClassMode.Teacher &&
+      {/* {state.classMode === ClassMode.Teacher &&
         viewMode !== ViewMode.ScreenShare && (
           <Tooltip
             tooltip={intl.formatMessage({ id: 'Controls.shareScreenTooltip' })}
           >
             <button
               type="button"
-              className={cx('shareButton')}
+              className={cx('shareButton hide')}
               onClick={() => {
                 onClickShareButton();
               }}
@@ -187,7 +187,7 @@ export default function Controls(props: Props) {
               <i className="fas fa-desktop" />
             </button>
           </Tooltip>
-        )}
+        )} */}
       {viewMode !== ViewMode.ScreenShare && (
         <Tooltip
           tooltip={
@@ -218,7 +218,7 @@ export default function Controls(props: Props) {
       >
         <button
           type="button"
-          className={cx('button')}
+          className={cx('gameButton')}
           onClick={() => {
             onClickGameModeButton();
           }}

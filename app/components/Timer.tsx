@@ -4,6 +4,8 @@ import ChimeSdkWrapper from '../chime/ChimeSdkWrapper';
 import getChimeContext from '../context/getChimeContext';
 import MessageType from '../types/MessageType';
 import moment from 'moment';
+import styles from './Timer.css';
+import classNames from 'classnames/bind';
 
 type Props = {
     adminId: string;
@@ -11,6 +13,8 @@ type Props = {
     roundNumber: number;
     attendeeIdToName: Object;
 }
+
+const cx = classNames.bind(styles);
 
 export default function Timer(props: Props) {
     const { adminId , gameUid, roundNumber, attendeeIdToName} = props;
@@ -71,7 +75,7 @@ export default function Timer(props: Props) {
 
     if (showTimer) {
         return (
-            <div>
+            <div className={(time <= 10 && time != 0) ? cx('font') : cx('color')}>
                 {moment(time*1000).utc().format('mm:ss')} time left
             </div>
         );

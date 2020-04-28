@@ -18,7 +18,7 @@ const cx = classNames.bind(styles);
 
 export default function Timer(props: Props) {
     const { adminId , gameUid, roundNumber, attendeeIdToName} = props;
-    const [time, setTime] = useState(20);
+    const [time, setTime] = useState(30);
     const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
     const [showTimer, setShowTimer] = useState(false);
 
@@ -46,7 +46,7 @@ export default function Timer(props: Props) {
     }
 
     const resetTime = () => {
-        setTime(20);
+        setTime(30);
     }
 
     useEffect(() => {

@@ -31,6 +31,8 @@
   --color_black_medium_opacity: rgba(0, 0, 0, 0.6);
   --color_black_low_opacity: rgba(0, 0, 0, 0.25);
   --color_gamegreen: rgba(151, 218, 89, 0.6);
+  --leader_board_width: 200px;
+  --leader_board_height: 300px;
 }
 
 *,

@@ -142,3 +142,22 @@
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(0.5rem);
 }
+
+.buttons {
+  display: flex;
+  flex: 0 0 5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.leaderBoard {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  width: var(--leader_board_width);
+  height: var(--leader_board_height);
+  background: var(--color_mine_shaft_light);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  color: white;
+}

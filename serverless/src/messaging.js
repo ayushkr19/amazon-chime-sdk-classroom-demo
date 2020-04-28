@@ -155,30 +155,8 @@ exports.sendmessage = async event => {
 
   var postData = JSON.parse(event.body).data;
   var data = JSON.parse(JSON.parse(event.body).data);
-  var attendeeIdToNameMap = {};
   
   console.log("Attendees: ",attendees)
-  
-    attendees.Items.map(async attendee => {
-     var gameRoom = data.payload.gameRoom;
-     var gameRoomVal = (gameRoom).concat("/");
-     var attendeeIdWithRoom = (gameRoomVal).concat(attendee.AttendeeId.S);
-     console.log("Generated",attendeeIdWithRoom);
-     try {
-        var name = await ddb
-         .query({
-            ExpressionAttributeValues: {
-             ':attendeeId': { S: attendeeIdWithRoom }
-          },
-         KeyConditionExpression: 'AttendeeId = :attendeeId',
-         TableName: ATTENDEES_TABLE_NAME
-        })
-          .promise();
-      } catch (e) {
-       return { statusCode: 500, body: e.stack };
-    } 
-  attendeeIdToNameMap[attendee.AttendeeId.S] = name.Items[0].Name.S;
-});
 
   var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo",
     "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube",
@@ -221,6 +199,28 @@ exports.sendmessage = async event => {
     if (data.payload.eventType === "start_game") {
 
       var gameUid = data.payload.gameUid;
+      var gameRoom = data.payload.gameRoom;
+      var gameRoomVal = (gameRoom).concat("/");
+      var attendeeIdToNameMap = {};
+      
+      attendees.Items.map(async attendee => {
+        var attendeeIdWithRoom = (gameRoomVal).concat(attendee.AttendeeId.S);
+        console.log("Generated",attendeeIdWithRoom);
+        try {
+          var name = await ddb
+           .query({
+              ExpressionAttributeValues: {
+               ':attendeeId': { S: attendeeIdWithRoom }
+            },
+             KeyConditionExpression: 'AttendeeId = :attendeeId',
+             TableName: ATTENDEES_TABLE_NAME
+          })
+            .promise();
+          } catch (e) {
+           return { statusCode: 500, body: e.stack };
+        } 
+        attendeeIdToNameMap[attendee.AttendeeId.S] = name.Items[0].Name.S;
+      });
 
       //Shuffle Movies Array
       var currentIndex = movies.length, temporaryValue, randomIndex;
@@ -275,6 +275,7 @@ exports.sendmessage = async event => {
       data.payload.roundNumber = 1;
       data.payload.actor = actor;
       data.payload.movie = movies[0];
+      data.payload.attendeeIdToName = attendeeIdToNameMap;
       postData = JSON.stringify(data);
 
       //End of Start Game
@@ -282,6 +283,7 @@ exports.sendmessage = async event => {
       console.log("Running for end round");
       // do a DDB call to get who is next with gameId
       var gameUid = data.payload.gameUid;
+      var attendeeIdToNameMap = data.payload.attendeeIdToName;
 
       // leaderboard code starts
       // we should get list of all gameUid matching
@@ -351,7 +353,37 @@ exports.sendmessage = async event => {
       dataForFirstCall.type = "chat-message";
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall));
       postDataLeaderBoard = JSON.stringify(dataForFirstCall);
+      
+      
+      
       // post call for new leaderBoard
+      // broadcast actual meessage
+      // 2 calls for end round
+      const postCalls = attendees.Items.map(async connection => {
+        const connectionId = connection.ConnectionId.S;
+        try {
+          await apigwManagementApi
+            .postToConnection({ ConnectionId: connectionId, Data: postDataLeaderBoard })
+            .promise();
+        } catch (e) {
+          if (e.statusCode === 410) {
+            console.log(`found stale connection, skipping ${connectionId}`);
+          } else {
+            console.error(
+              `error posting to connection ${connectionId}: ${e.message}`
+            );
+          }
+        }
+      });
+      try {
+        await Promise.all(postCalls);
+      } catch (e) {
+        console.error(`failed to post: ${e.message}`);
+        return { statusCode: 500, body: e.stack };
+      }
+      return { statusCode: 200, body: 'Data sent.' };
+  
+      
 
       // leaderboard code ends
       var previousRoundNumber = data.payload.roundNumber;
@@ -411,30 +443,4 @@ exports.sendmessage = async event => {
     console.error(`failed to post: ${e.message}`);
     return { statusCode: 500, body: e.stack };
   }
-
-  // broadcast actual meessage
-  // 2 calls for end round
-  const postCalls = attendees.Items.map(async connection => {
-    const connectionId = connection.ConnectionId.S;
-    try {
-      await apigwManagementApi
-        .postToConnection({ ConnectionId: connectionId, Data: postDataLeaderBoard })
-        .promise();
-    } catch (e) {
-      if (e.statusCode === 410) {
-        console.log(`found stale connection, skipping ${connectionId}`);
-      } else {
-        console.error(
-          `error posting to connection ${connectionId}: ${e.message}`
-        );
-      }
-    }
-  });
-  try {
-    await Promise.all(postCalls);
-  } catch (e) {
-    console.error(`failed to post: ${e.message}`);
-    return { statusCode: 500, body: e.stack };
-  }
-  return { statusCode: 200, body: 'Data sent.' };
 };

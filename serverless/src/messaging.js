@@ -326,13 +326,13 @@ exports.sendmessage = async event => {
       // var allAttendees = new List();
       var listLength = currentRecordOfGameUid.Items.length;
       console.log("List item length", listLength);
-      var leaderBoard = [];
+      var leaderBoard = {};
       var allAttendees = [];
       var allMovies = [];
 
       for (var i = 0; i < listLength; ++i) {
         var currentRecord = currentRecordOfGameUid.Items[i];
-        leaderBoard.push([currentRecord.AttendeeId.S, currentRecord.Points.N]);
+        leaderBoard[attendeeIdToNameMap[currentRecord.AttendeeId.S]]=currentRecord.Points.N;
         // var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
         allAttendees.push(currentRecord.AttendeeId.S);
         allMovies.push(currentRecord.Movie.S);
@@ -347,7 +347,7 @@ exports.sendmessage = async event => {
       // leaderBoard.push(["player1", "score1"]);
       // get previous leaderBoard from currentLeaderBoard and build new one
       dataForFirstCall = data;
-      dataForFirstCall.payload.message = convertNestedArrayToString(leaderBoard);
+      dataForFirstCall.payload.message = JSON.stringify(leaderBoard);
       dataForFirstCall.type = "chat-message";
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall));
       postDataLeaderBoard = JSON.stringify(dataForFirstCall);
@@ -373,21 +373,21 @@ exports.sendmessage = async event => {
     console.log("EndData : ", JSON.stringify(postData));
   }
 
-  function convertNestedArrayToString(array) {
-    let string = "";
-    for (let item of array) {
-      if (Array.isArray(item)) {
-        // new line
-        string += convertNestedArrayToString(item);
-        string += "/n"
-      }
-      else {
-        string += item;
-        string += " /t ";
-      }
-    }
-    return string;
-  }
+  // function convertNestedArrayToString(array) {
+  //   // let string = "";
+  //   for (let item of array) {
+  //     if (Array.isArray(item)) {
+  //       // new line
+  //       string += convertNestedArrayToString(item);
+  //       string += "/n"
+  //     }
+  //     else {
+  //       string += item;
+  //       string += " /t ";
+  //     }
+  //   }
+  //   return string;
+  // }
 
   const postCallsForLeaderBoard = attendees.Items.map(async connection => {
     const connectionId = connection.ConnectionId.S;

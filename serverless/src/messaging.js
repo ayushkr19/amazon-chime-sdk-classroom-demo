@@ -158,9 +158,8 @@ exports.sendmessage = async event => {
   console.log("Attendees: ", attendees);
 
 
-  var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo",
-    "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube",
-    "Suspicion"];
+  var movies = ["Joker", "Harry Potter", "Fear", "Wings", "Thor",
+    "Spiderman"];
 
   //Start of Successful guess code
   if (data.type === "chat-message") {
@@ -334,16 +333,25 @@ exports.sendmessage = async event => {
       // var allAttendees = new List();
       var listLength = currentRecordOfGameUid.Items.length;
       console.log("List item length", listLength);
-      var leaderBoard = {};
+      var leaderBoard = [];
       var allAttendees = [];
       var allMovies = [];
 
       for (var i = 0; i < listLength; ++i) {
         var currentRecord = currentRecordOfGameUid.Items[i];
+        var obj = {
+          name: attendeeIdToNameMap[currentRecord.AttendeeId.S],
+          score: currentRecord.Points.N
+        };
+        // obj["name"] = attendeeIdToNameMap[currentRecord.AttendeeId.S];
+        // obj["score"] = currentRecord.Points.N;
+        leaderBoard.push(obj);
+
+
         console.log("-> currentRecord", currentRecord);
-        var name1 = attendeeIdToNameMap[currentRecord.AttendeeId.S];
-        console.log("-> name: ", name1);
-        leaderBoard[name1] = currentRecord.Points.N;
+        // var name1 = attendeeIdToNameMap[currentRecord.AttendeeId.S];
+        // console.log("-> name: ", name1);
+        // leaderBoard[name1] = currentRecord.Points.N;
         // var map = new Map.set(currentRecord.AttendeeId, currentRecord.Points);
         allAttendees.push(currentRecord.AttendeeId.S);
         allMovies.push(currentRecord.Movie.S);

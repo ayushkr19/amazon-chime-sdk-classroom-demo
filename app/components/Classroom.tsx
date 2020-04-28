@@ -52,7 +52,7 @@ export default function Classroom() {
   const [activeActorAttendeeId, setActiveActorAttendeeId] = useState("");
   const [attendeeIdState, setAttendeeIdState] = useState("");
   const [attendeeIdToName, setattendeeIdToName] = useState({});
-  const [isLeaderBoardEnabled, setIsLeaderBoardEnabled] = useState(true);
+  const [isLeaderBoardEnabled, setIsLeaderBoardEnabled] = useState(false);
   const [scoreBoard, setScoreBoard] = useState<GameScoreType[]>([]);
 
   const onClickGameModeButton = () => {
@@ -75,15 +75,6 @@ export default function Classroom() {
         });
         setGameUid(newGameId);
       }
-
-      // Start round TODO: This is only for testing right now.
-      // chime?.sendMessage('game_message', {
-      //   attendeeId,
-      //   message: "Start round bro.",
-      //   eventType: "start_round",
-      //   actorId: attendeeId,
-      //   roundNumber: 1
-      // });
     }
   }
 

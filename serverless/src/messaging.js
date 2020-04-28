@@ -11,6 +11,8 @@ chime.endpoint = new AWS.Endpoint(
 );
 const { CONNECTIONS_TABLE_NAME } = process.env;
 const { GAME_TABLE_NAME } = process.env;
+const { ATTENDEES_TABLE_NAME } = process.env;
+
 const strictVerify = true;
 
 exports.authorize = async (event, context, callback) => {
@@ -152,8 +154,31 @@ exports.sendmessage = async event => {
   });
 
   var postData = JSON.parse(event.body).data;
-
   var data = JSON.parse(JSON.parse(event.body).data);
+  var attendeeIdToNameMap = {};
+  
+  console.log("Attendees: ",attendees)
+  
+    attendees.Items.map(async attendee => {
+     var gameRoom = data.payload.gameRoom;
+     var gameRoomVal = (gameRoom).concat("/");
+     var attendeeIdWithRoom = (gameRoomVal).concat(attendee.AttendeeId.S);
+     console.log("Generated",attendeeIdWithRoom);
+     try {
+        var name = await ddb
+         .query({
+            ExpressionAttributeValues: {
+             ':attendeeId': { S: attendeeIdWithRoom }
+          },
+         KeyConditionExpression: 'AttendeeId = :attendeeId',
+         TableName: ATTENDEES_TABLE_NAME
+        })
+          .promise();
+      } catch (e) {
+       return { statusCode: 500, body: e.stack };
+    } 
+  attendeeIdToNameMap[attendee.AttendeeId.S] = name.Items[0].Name.S;
+});
 
   var movies = ["Haven", "LimeLight", "Parasite", "Fear", "Wings", "Argo",
     "Goodfellas", "Jumanji", "Frozen", "Skyfall", "Valentine", "Cube",
@@ -166,7 +191,7 @@ exports.sendmessage = async event => {
     var guess = data.payload.message;
     var attendeeId = data.payload.attendeeId;
 
-    if (guess.toUpperCase() === movie.toUpperCase()) {
+  if (guess.toUpperCase() === movie.toUpperCase()) {
       try {
         var score = await docClient
           .update({

@@ -252,7 +252,7 @@ export default function Classroom() {
                 </div>
 
                 <div className={cx('label')}>
-                  <Timer adminId={adminId}/>
+                  <Timer adminId={adminId} gameUid={gameUid} roundNumber={roundNumber}/>
                 </div>
               </div>
               <div className={cx('deviceSwitcher')}>

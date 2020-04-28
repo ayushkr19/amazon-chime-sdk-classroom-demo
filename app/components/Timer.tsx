@@ -7,10 +7,12 @@ import moment from 'moment';
 
 type Props = {
     adminId: string;
+    gameUid: string;
+    roundNumber: number;
 }
 
 export default function Timer(props: Props) {
-    const { adminId } = props;
+    const { adminId , gameUid, roundNumber} = props;
     const [time, setTime] = useState(20);
     const chime: ChimeSdkWrapper | null = useContext(getChimeContext());
     const [showTimer, setShowTimer] = useState(false);
@@ -28,7 +30,9 @@ export default function Timer(props: Props) {
                     attendeeId,
                     message: "End round bro.",
                     eventType: "end_round", 
-                    roundNumber: 1
+                    roundNumber: roundNumber,
+                    gameUid: gameUid,
+                    adminId: adminId
                 });
             }
         }

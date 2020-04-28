@@ -400,8 +400,6 @@ Resources:
           TableName: !Ref ConnectionsTable
       - DynamoDBCrudPolicy:
           TableName: !Ref GameTable      
-      - DynamoDBCrudPolicy:
-          TableName: !Ref Attendees   
       - Statement:
         - Effect: Allow
           Action:

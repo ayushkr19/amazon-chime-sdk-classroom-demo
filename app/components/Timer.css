@@ -1,0 +1,18 @@
+/*!
+ * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+.color {
+    color: white;
+}
+ .font {
+    animation: fontbulger 1s infinite;
+    color: white;
+ }
+
+@keyframes fontbulger {
+    100% {
+        font-size: 15px;
+    }
+}
+  

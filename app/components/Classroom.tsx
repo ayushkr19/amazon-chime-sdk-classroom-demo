@@ -304,7 +304,7 @@ export default function Classroom() {
                   <th>Score</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className = {cx('tableAllign')}>
                 {scoreBoard.map((row, index) => (
                   <tr key={row.name}>
                     <td>{row.name}</td>

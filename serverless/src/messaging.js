@@ -325,7 +325,7 @@ exports.sendmessage = async event => {
       dataForFirstCall.payload.message = convertNestedArrayToString(leaderBoard);
       dataForFirstCall.type = "chat-message";
       console.log("Broadcasting previous round score as: " + JSON.stringify(dataForFirstCall));
-      postDataLeaderBoard = dataForFirstCall;
+      postDataLeaderBoard = JSON.stringify(dataForFirstCall);
       // post call for new leaderBoard
 
       // leaderboard code ends
@@ -341,7 +341,7 @@ exports.sendmessage = async event => {
       data.payload.movie = allMovies[currentRoundNumner - 1];
       data.payload.actor = allAttendees[currentRoundNumner - 1];
       console.log("Braodcasing message to all for next round: " + JSON.stringify(data));
-      postData = data;
+      postData = JSON.stringify(data);
     } else if (data.payload.eventType === "end_game") {
       // todo - implement, would be similar to round end
     }
